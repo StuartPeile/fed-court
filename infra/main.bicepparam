@@ -1,5 +1,5 @@
 using './main.bicep'
 
 param environmentName = 'fedtest'
-param location = 'ausraliaeast'
+param location = 'australiaeast'
 
