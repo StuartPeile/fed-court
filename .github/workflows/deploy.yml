@@ -38,8 +38,8 @@ jobs:
           location: australiaeast
           scope: subscription
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          template-file: ./main.bicep
-          parameters-file: ./main.bicepparam
+          template-file: ./infra/main.bicep
+          parameters-file: ./infra/main.bicepparam
   
       - name: What-If
         uses: azure/bicep-deploy@v1
@@ -50,8 +50,8 @@ jobs:
           location: australiaeast
           scope: subscription
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          template-file: ./main.bicep
-          parameters-file: ./main.bicepparam
+          template-file: ./infra/main.bicep
+          parameters-file: ./infra/main.bicepparam
 
       - name: Create
         uses: azure/bicep-deploy@v1
