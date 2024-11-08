@@ -1,5 +1,3 @@
-targetScope = 'subscription'
-
 // The main bicep module to provision Azure resources.
 // For a more complete walkthrough to understand how this file works with azd,
 // see https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/make-azd-compatible?pivots=azd-create
@@ -23,19 +21,10 @@ var tags = {
 
 var uniqueID = substring(uniqueString(subscription().id),0,4)
 
-var resourceGroupName = '${abbrs.resourcesResourceGroups}${environmentName}'
-
-// Organize resources in a resource group
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: resourceGroupName
-  location: location
-  tags: tags
-}
-
 var networkingName = '${abbrs.networkVirtualNetworks}${environmentName}'
 module networking 'modules/networking/networking.bicep' = {
   name: networkingName
-  scope: resourceGroup
+  scope: resourceGroup()
   params: {
     name: networkingName
     tags: tags
@@ -46,8 +35,8 @@ module networking 'modules/networking/networking.bicep' = {
 
 var sqlNetworkingName = 'sqlnetworking'
 module sqlNetworking 'modules/networking/sqlserver-networking.bicep' = {
-  scope: resourceGroup
   name: sqlNetworkingName
+  scope: resourceGroup()
   dependsOn:[networking]
   params: {
     managedInstanceName: '${abbrs.sqlManagedInstances}${environmentName}'
@@ -61,7 +50,7 @@ module sqlNetworking 'modules/networking/sqlserver-networking.bicep' = {
 var keyvaultName = '${abbrs.keyVaultVaults}${environmentName}-${uniqueID}'
 module keyvault 'modules//keyvault/keyvault.bicep' = {
   name: keyvaultName
-  scope: resourceGroup
+  scope: resourceGroup()
   params: {
     name: keyvaultName
     tags: tags
@@ -73,7 +62,7 @@ module keyvault 'modules//keyvault/keyvault.bicep' = {
 var monitoringName = 'mon${environmentName}'
 module monitoring 'modules/monitor/monitoring.bicep' = {
   name: monitoringName
-  scope: resourceGroup
+  scope: resourceGroup()
   params: {
     tags: tags
     applicationInsightsName: '${abbrs.applicationInsights}${environmentName}'
@@ -88,7 +77,7 @@ var sqlServerName = '${abbrs.sqlServers}${environmentName}'
 module sqlServer 'modules/sqlserver/fullsqlserver.bicep' = {
   dependsOn:[networking, monitoring, sqlNetworking]
   name: sqlServerName
-  scope: resourceGroup
+  scope: resourceGroup()
   params: {
     virtualNetworkSubNetId: networking.outputs.sqlVirtualNetworkSubnetId
     tags: tags
@@ -100,7 +89,7 @@ module sqlServer 'modules/sqlserver/fullsqlserver.bicep' = {
 var appServicePlanName = '${abbrs.webServerFarms}web-${environmentName}-${uniqueID}'
 module appServicePlan 'modules/webapp/appserviceplan.bicep' = {
   name: appServicePlanName
-  scope: resourceGroup
+  scope: resourceGroup()
   params: {
     name: appServicePlanName
     tags: tags
@@ -115,7 +104,7 @@ var appServiceName = '${abbrs.webSitesAppService}api-${environmentName}-${unique
 module apiAppService 'modules/webapp/appservice.bicep' = {
   dependsOn: [appServicePlan, monitoring, networking]
   name: appServiceName
-  scope: resourceGroup
+  scope: resourceGroup()
   params: {
     name: appServiceName
     planId: appServicePlan.outputs.id
