@@ -29,6 +29,30 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Validate
+        uses: azure/bicep-deploy@v1
+        with:
+          type: deployment
+          operation: validate
+          name: Development
+          location: australiaeast
+          scope: subscription
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          template-file: ./main.bicep
+          parameters-file: ./main.bicepparam
+  
+      - name: What-If
+        uses: azure/bicep-deploy@v1
+        with:
+          type: deployment
+          operation: whatIf
+          name: Development
+          location: australiaeast
+          scope: subscription
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          template-file: ./main.bicep
+          parameters-file: ./main.bicepparam
+
       - name: Create
         uses: azure/bicep-deploy@v1
         with:
@@ -40,3 +64,12 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           template-file: ./infra/main.bicep
           parameters-file: ./infra/main.bicepparam
+
+      - name: Check the deployed service URL
+        uses: jtalk/url-health-check-action@v4
+        with:
+          url: https://fedcourt.com/healthy
+          follow-redirect: false 
+          max-attempts: 3 
+          retry-delay: 5s 
+          retry-all: false

@@ -142,12 +142,8 @@ module webAppApplicationSQLLinker 'modules/webapp/appservice-sql-linker.bicep' =
   */
 
 output AZURE_LOCATION string = location
+
 output AZURE_TENANT_ID string = tenant().tenantId
 
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
 
-//output AZURE_SERVICEBUS_ENDPOINT string = serviceBus.outputs.serviceBusEndpoint
-//output AZURE_COSMOSDB_ENDPOINT string = cosmosApp.outputs.cosmosDbAccountEndpoint
-//output AZURE_SIGNALR_ENDPOINT string = signalR.outputs.signalREndpoint
-//output RG_SURFACE string = rgSurface.name
-//output RG_PROCESSING string = rgProcessing.name
