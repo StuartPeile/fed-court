@@ -36,8 +36,7 @@ jobs:
           operation: create
           name: Development
           location: australiaeast
-          scope: resourceGroup
+          scope: subscription
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          resource-group-name: rg-fedcourt
           template-file: ./infra/main.bicep
           parameters-file: ./infra/main.bicepparam
