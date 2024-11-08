@@ -11,6 +11,7 @@ on:
 env:
   # Setting an environment variable with the value of a configuration variable
   env_var: ${{ vars.AZURE_CLIENT_ID }}
+  env_aaa: ${{ vars.AAA }}
 
 permissions:
   contents: read
@@ -27,6 +28,9 @@ jobs:
 
       - name: Vars
         run: echo "$env_var"
+
+      - name: Vars AAA
+        run: echo "$env_aaa"
 
   #    - name: Login
   #      uses: azure/login@v2
