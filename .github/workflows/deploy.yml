@@ -8,6 +8,10 @@ on:
           type: environment
           required: true
 
+env:
+  # Setting an environment variable with the value of a configuration variable
+  env_var: ${{ vars.AZURE_CLIENT_ID }}
+
 permissions:
   contents: read
   id-token: write
@@ -22,7 +26,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Vars
-        run: echo "${{ vars.AZURE_CLIENT_ID }}"
+        run: echo "$env_var"
 
   #    - name: Login
   #      uses: azure/login@v2
