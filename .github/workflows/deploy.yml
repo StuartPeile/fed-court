@@ -63,7 +63,7 @@ jobs:
           scope: subscription
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           template-file: ./infra/main.bicep
-          parameters-file: ./infra/main.bicepparam
+          parameters: '{"environmentName": ${{ vars.AZURE_ENV_NAME }},"location": ${{ vars.AZURE_LOCATION }}, "sqlAdminPassword": ${{ vars.AZURE_SQLADMIN_PASSWORD }}, "sqlAdminUser": "sqladmin" }'
 
       - name: Start DB Migration
         uses: jtalk/url-health-check-action@v4
