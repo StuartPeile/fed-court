@@ -1,0 +1,21 @@
+@FedCourtApi_HostAddress = https://app-api-fedtest-65t5.azurewebsites.net
+
+GET {{FedCourtApi_HostAddress}}/dbmigrate/
+Accept: application/json
+
+###
+
+GET {{FedCourtApi_HostAddress}}/healthy/
+Accept: application/json
+
+###
+
+GET {{FedCourtApi_HostAddress}}/todo/
+Accept: application/json
+
+###
+
+GET {{FedCourtApi_HostAddress}}/alive/
+Accept: application/json
+
+###
