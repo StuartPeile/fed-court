@@ -6,7 +6,7 @@ param administratorLogin string = 'sqladmin'
 
 @description('Enter password.')
 @secure()
-param administratorLoginPassword string = 'F6cEhD#kp@WR=Bf8+GqdY'
+param administratorLoginPassword string
 
 @description('Enter location. If you leave this field blank resource group location would be used.')
 param location string = 'australiaeast'
@@ -22,6 +22,8 @@ param storageSizeInGB int = 32
 
 @description('Enter license type.')
 param licenseType string = 'LicenseIncluded'
+
+param databaseName string = 'projectmanager'
 
 param tags object = {}
 
@@ -46,3 +48,15 @@ resource managedInstance 'Microsoft.Sql/managedInstances@2021-11-01-preview' = {
     licenseType: licenseType
   }
 }
+
+resource sqlDatabase 'Microsoft.Sql/managedInstances/databases@2021-11-01' = {
+  name: databaseName
+  parent: managedInstance
+  location: location
+  properties: {
+    collation: 'SQL_Latin1_General_CP1_CI_AS'
+  }
+}
+
+output sqlManagedInstanceFqdn string = managedInstance.properties.fullyQualifiedDomainName
+output databaseId string = sqlDatabase.id

@@ -12,6 +12,14 @@ param environmentName string
 @description('Primary location for all resources')
 param location string
 
+@description('SQL Admin Password')
+@secure()
+param sqlAdminPassword string
+
+@description('SQL Admin User')
+@secure()
+param sqlAdminUser string
+
 var abbrs = loadJsonContent('./abbreviations.json')
 
 // tags that should be applied to all resources.
@@ -22,11 +30,18 @@ var tags = {
 
 var uniqueID = substring(uniqueString(subscription().id),0,4)
 
+var resourceGroupSettingsName = '${abbrs.resourcesResourceGroups}${environmentName}-settings'
 var resourceGroupName = '${abbrs.resourcesResourceGroups}${environmentName}'
 
 // Organize resources in a resource group
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
+  location: location
+  tags: tags
+}
+
+resource resourceGroupSettings 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+  name: resourceGroupSettingsName
   location: location
   tags: tags
 }
@@ -58,9 +73,9 @@ module sqlNetworking 'modules/networking/sqlserver-networking.bicep' = {
 }
 
 var keyvaultName = '${abbrs.keyVaultVaults}${environmentName}-${uniqueID}'
-module keyvault 'modules//keyvault/keyvault.bicep' = {
+module keyvault 'modules/keyvault/keyvault.bicep' = {
   name: keyvaultName
-  scope: resourceGroup
+  scope: resourceGroupSettings
   params: {
     name: keyvaultName
     tags: tags
@@ -90,8 +105,21 @@ module sqlServer 'modules/sqlserver/fullsqlserver.bicep' = {
   scope: resourceGroup
   params: {
     virtualNetworkSubNetId: networking.outputs.sqlVirtualNetworkSubnetId
+    administratorLoginPassword: sqlAdminPassword
     tags: tags
     location: location
+  }
+}
+
+var sqlServerKeyVaultConnectionStringName = '${abbrs.sqlServers}${environmentName}-${abbrs.keyVaultVaults}secret-connectionstring'
+module sqlServerKeyVaultConnectionString 'modules/keyvault/keyvault-secret.bicep' = {
+  dependsOn:[sqlServer, keyvault]
+  name: sqlServerKeyVaultConnectionStringName
+  scope: resourceGroupSettings
+  params: {
+    secretName:'ToDoDbConnectionString'
+    secretValue: 'Server=tcp:${sqlServer.outputs.sqlManagedInstanceFqdn},1433;Persist Security Info=False;User ID=${sqlAdminUser};Password=${sqlAdminPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    keyVaultName: keyvaultName
   }
 }
 
