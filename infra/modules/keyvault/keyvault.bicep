@@ -3,8 +3,6 @@ param name string
 param location string
 param tags object = {}
 
-param principalId string = ''
-
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   name: name
   location: location
@@ -12,16 +10,9 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   properties: {
     tenantId: subscription().tenantId
     sku: { family: 'A', name: 'standard' }
-    accessPolicies: !empty(principalId) ? [
-      {
-        objectId: principalId
-        permissions: { secrets: [ 'get', 'list' ] }
-        tenantId: subscription().tenantId
-      }
-    ] : []
+    enableRbacAuthorization: true
   }
 }
-
 
 output endpoint string = keyVault.properties.vaultUri
 output id string = keyVault.id

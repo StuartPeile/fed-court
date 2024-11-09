@@ -58,19 +58,6 @@ module networking 'modules/networking/networking.bicep' = {
   }
 }
 
-var sqlNetworkingName = 'sqlnetworking'
-module sqlNetworking 'modules/networking/sqlserver-networking.bicep' = {
-  name: sqlNetworkingName
-  scope: resourceGroup
-  dependsOn:[networking]
-  params: {
-    managedInstanceName: '${abbrs.sqlManagedInstances}${environmentName}'
-    virtualNetworkName: networking.outputs.VirtualNetworkName
-    tags: tags
-    location: location
-    environmentName: environmentName
-  }
-}
 
 var keyvaultName = '${abbrs.keyVaultVaults}${environmentName}-${uniqueID}'
 module keyvault 'modules/keyvault/keyvault.bicep' = {
@@ -99,15 +86,20 @@ module monitoring 'modules/monitor/monitoring.bicep' = {
 //SQL
 
 var sqlServerName = '${abbrs.sqlServers}${environmentName}'
-module sqlServer 'modules/sqlserver/fullsqlserver.bicep' = {
-  dependsOn:[networking, monitoring, sqlNetworking]
+var databaseName = 'todo'
+module sqlServer 'modules/sqlserver/sqlwithprivate.bicep' = {
+  dependsOn:[networking, monitoring]
   name: sqlServerName
   scope: resourceGroup
   params: {
     virtualNetworkSubNetId: networking.outputs.sqlVirtualNetworkSubnetId
-    administratorLoginPassword: sqlAdminPassword
+    virtualNetworkId: networking.outputs.virtualNetworkId
+    sqlAdminPassword:sqlAdminPassword
+    sqlAdminUsername: sqlAdminUser
+    databaseName: databaseName
     tags: tags
     location: location
+    sqlServerName: sqlServerName
   }
 }
 
@@ -118,11 +110,10 @@ module sqlServerKeyVaultConnectionString 'modules/keyvault/keyvault-secret.bicep
   scope: resourceGroupSettings
   params: {
     secretName:'ToDoDbConnectionString'
-    secretValue: 'Server=tcp:${sqlServer.outputs.sqlManagedInstanceFqdn},1433;Persist Security Info=False;User ID=${sqlAdminUser};Password=${sqlAdminPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    secretValue: 'Server=tcp:${sqlServer.outputs.sqlServerFqdn},1433;Initial Catalog=${databaseName};Persist Security Info=False;User ID=${sqlAdminUser};Password=${sqlAdminPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
     keyVaultName: keyvaultName
   }
 }
-
 
 var appServicePlanName = '${abbrs.webServerFarms}web-${environmentName}-${uniqueID}'
 module appServicePlan 'modules/webapp/appserviceplan.bicep' = {
@@ -156,22 +147,15 @@ module apiAppService 'modules/webapp/appservice.bicep' = {
   }
 }
 
-/*
-module webAppApplicationSQLLinker 'modules/webapp/appservice-sql-linker.bicep' = {
-  dependsOn: [webAppService, sqlServer]
-  name: 'webAppApplicationSqlLinker'
-  scope: rgSurface
-  params:{
-    name:'application'
-    dbAccountId: sqlServer.outputs.sqlServerApplicationId
-    appServiceName: webAppServiceName
+var appServiceKeyVaultAccessName = '${abbrs.keyVaultVaults}api-${environmentName}-${uniqueID}-access'
+module appServiceKeyVaultAccess 'modules/keyvault/keyvault-appsecretaccess.bicep' = {
+  dependsOn: [keyvault,apiAppService]
+  name: appServiceKeyVaultAccessName
+  scope: resourceGroupSettings
+  params: {
+     keyVaultName: keyvaultName
+      principalId: apiAppService.outputs.appServicePrincipalId
   }
 }
-  */
 
-output AZURE_LOCATION string = location
-
-output AZURE_TENANT_ID string = tenant().tenantId
-
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
-
+output APIAPPSERVICEURL string = apiAppService.outputs.appServiceHostName

@@ -40,14 +40,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-02-01' = {
         name: '${abbrs.networkVirtualNetworksSubnets}${environmentName}-sql'
         properties: {
           addressPrefix: '10.0.2.0/24'
-          delegations: [
-            {
-              name: 'sqlDelegation'
-              properties: {
-                serviceName: 'Microsoft.Sql/managedInstances'
-              }
-            }
-          ]
+          privateEndpointNetworkPolicies: 'Disabled'
         }
       }
     ]
@@ -62,7 +55,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-02-01' = {
 }
 
 output webAppVirtualNetworkSubnetId string = vnet::subNetWeb.id
-
 output VirtualNetworkName string = vnet.name
+output virtualNetworkId string = vnet.id
 output sqlVirtualNetworkSubnetName string = vnet::subNetSql.name
 output sqlVirtualNetworkSubnetId string = vnet::subNetSql.id

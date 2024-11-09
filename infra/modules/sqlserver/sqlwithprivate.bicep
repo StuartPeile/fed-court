@@ -1,8 +1,8 @@
 @description('Name of the SQL Server')
-param sqlServerName string = 'mySqlServer'
+param sqlServerName string
 
 @description('Name of the SQL Server Database')
-param databaseName string = 'fedproductivity'
+param databaseName string
 
 @description('Administrator username for the SQL Server')
 param sqlAdminUsername string
@@ -11,59 +11,19 @@ param sqlAdminUsername string
 @secure()
 param sqlAdminPassword string
 
-@description('Name of the Virtual Network for the Private Endpoint')
-param vnetName string
+param tags object = {}
 
-@description('Name of the subnet for the Private Endpoint')
-param subnetName string
+param virtualNetworkId string
 
-@description('Azure Region')
-param location string = resourceGroup().location
+param virtualNetworkSubNetId string
 
-var abbrs = loadJsonContent('../../abbreviations.json')
-
-resource vnet 'Microsoft.Network/virtualNetworks@2023-02-01' = {
-  name: vnetName
-  location: location
-  properties: {
-    addressSpace: {
-      addressPrefixes: [
-        '10.0.0.0/16'
-      ]
-    }
-    subnets: [
-      {
-        name: '${vnetName}-${abbrs.networkVirtualNetworksSubnets}-webapp'
-        properties: {
-          addressPrefix: '10.0.1.0/24'
-          delegations: [
-            {
-              name: 'webAppDelegation'
-              properties: {
-                serviceName: 'Microsoft.Web/serverFarms'
-              }
-            }
-          ]
-        }
-      }
-      {
-        name: '${vnetName}-${abbrs.networkVirtualNetworksSubnets}-sql'
-        properties: {
-          addressPrefix: '10.0.2.0/24'
-          privateEndpointNetworkPolicies: 'Disabled'
-        }
-      }
-    ]
-  }
-  resource sqlSubnet 'subnets' existing = {
-      name: '${vnetName}-${abbrs.networkVirtualNetworksSubnets}-sql'
-  }
-}
+param location string
 
 
 resource sqlServer 'Microsoft.Sql/servers@2022-11-01-preview' = {
   name: sqlServerName
   location: location
+  tags:tags
   properties: {
     administratorLogin: sqlAdminUsername
     administratorLoginPassword: sqlAdminPassword
@@ -71,28 +31,17 @@ resource sqlServer 'Microsoft.Sql/servers@2022-11-01-preview' = {
   }
 }
 
-/*
-resource database 'Microsoft.Sql/servers/databases@2021-11-01-preview' = {
+resource sqlDB 'Microsoft.Sql/servers/databases@2022-05-01-preview' = {
+  parent: sqlServer
   name: databaseName
   location: location
+  tags:tags
   sku: {
-    name: 'Basic'
-    tier: 'Basic'
-    capacity: 5
+    name: 'Standard'
+    tier: 'Standard'
   }
-  tags: {
-    displayName: databaseName
-  }
-  properties: {
-    collation: 'SQL_Latin1_General_CP1_CI_AS'
-    maxSizeBytes: 104857600
-    sampleName: 'AdventureWorksLT'
-  }
-  dependsOn: [
-    sqlServer
-  ]
 }
-*/
+
 
 resource sqlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.database.windows.net'
@@ -105,7 +54,7 @@ resource sqlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
       properties: {
           registrationEnabled: false // We do not need auto registration of virtual machines in this DNS zone.
           virtualNetwork: {
-              id: vnet.id
+              id: virtualNetworkId
           }
       }
   }
@@ -117,8 +66,9 @@ resource sqlPrivateLink 'Microsoft.Network/privateEndpoints@2024-03-01' = {
 
   properties: {
       subnet: {
-          id: vnet::sqlSubnet.id
+          id: virtualNetworkSubNetId
       }
+      customNetworkInterfaceName: '${sqlServerName}-privateEndpoint.nic'
       privateLinkServiceConnections: [
           {
               name: '${sqlServerName}-privateEndpoint'

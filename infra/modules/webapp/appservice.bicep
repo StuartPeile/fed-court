@@ -52,8 +52,8 @@ resource slot 'Microsoft.Web/sites/slots@2022-03-01' = {
 resource settings 'Microsoft.Web/sites/config@2022-09-01' = {
   name: 'appsettings'
   parent: appService
-  //properties: union(appSettings, baseAppSettings)
-  properties: appSettings
+  properties: union(appSettings, baseAppSettings)
+  //properties: appSettings
 }
 
 output appServicePrincipalId string = appService.identity.principalId
