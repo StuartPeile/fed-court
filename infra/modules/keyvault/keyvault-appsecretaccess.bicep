@@ -9,7 +9,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' existing = {
 }
 
 // Define the Role Assignment for Key Vault Secrets User
-var roleId = 'b86a8fe8-9e37-4e8b-8d43-8ec9b81d0301'
+var roleId = '4633458b-17de-408a-b874-0445c86b69e6'
 resource keyVaultSecretAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(keyVault.id, principalId, roleId) // Unique name using Key Vault ID, principal ID, and role ID
   scope: keyVault
