@@ -82,3 +82,8 @@ I'd split the resources into more resource groups so secutity access can be gran
 - logging: only available to ops teams
 - data: sql administrators
 - networking: keep critical netorking infrastructure in one place
+
+#### Application Dashboard
+
+I'd create an application dashboard that would pull in critical information for the application as a single pane of glass reporting
+
