@@ -96,3 +96,8 @@ I'd split the pipleine into more jobs and group steps and not have a singe job t
 #### SQL Admin
 
 Not use the sql admin account for the project but set up a dedicated user
+
+#### Refactor
+
+Name the github action better and use more standard variables in my C#, bicep and Github Action. The short time on the project has meant there might be a bit of sloppy code here and there.
+
