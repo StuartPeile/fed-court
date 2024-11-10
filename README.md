@@ -49,9 +49,9 @@ Application Insights backed by Log Analytics is provisioned and attached to the 
 
 #### KeyVault
 
-I deployed the keyvault to it's own resource group, this makes it easier to maintain if environemnts are destroyed and re-deployed as you would come up against the issue of purging the deleted keyvault.
+I deployed the keyvault to it's own resource group, this makes it easier to maintain if environemnts are destroyed and re-deployed as you would come up against the issue of purging the deleted keyvault. Access to the KeyVault is granted only to the AppService via an RBAC role thats only allowed to retrieve the secrets. It is accessed via the App Service code using the DefaultAzureCredential principal.
 
-#### SQL Database ve SQL Managed Instance
+#### SQL Database vs SQL Managed Instance
 
 I started out with a SQL Managed Instance so I could put it directly into the subnet but the deployment was taking too long (30 minutes +) and after multiple teardowns that took 40 minutes plus I decided to use an Azure SQL database and connect the App Service to the Azure SQL Database via a private link this was deployed to the sql subnet, therefore via connection brining the SQL Database into the subnet
 
@@ -89,3 +89,6 @@ I'd split the resources into more resource groups so secutity access can be gran
 
 I'd create an application dashboard that would pull in critical information for the application as a single pane of glass reporting
 
+#### Pipeline steps and jobs
+
+I'd split the pipleine into more jobs and group steps and not have a singe job that had multiple steps
