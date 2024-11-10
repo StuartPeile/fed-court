@@ -131,7 +131,7 @@ module appServicePlan 'modules/webapp/appserviceplan.bicep' = {
 
 var appServiceName = '${abbrs.webSitesAppService}api-${environmentName}-${uniqueID}'
 module apiAppService 'modules/webapp/appservice.bicep' = {
-  dependsOn: [appServicePlan, monitoring, networking]
+  dependsOn: [appServicePlan, monitoring, networking, keyvault]
   name: appServiceName
   scope: resourceGroup
   params: {
@@ -143,6 +143,7 @@ module apiAppService 'modules/webapp/appservice.bicep' = {
     appSettings: {
       APPLICATIONINSIGHTS_CONNECTION_STRING: monitoring.outputs.applicationInsightsConnectionString
       APPINSIGHTS_INSTRUMENTATIONKEY: monitoring.outputs.applicationInsightsInstrumentationKey
+      KEY_VAULT_URL: keyvault.outputs.endpoint
     }
   }
 }

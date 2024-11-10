@@ -11,11 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Configuration.AddAzureKeyVault(new Uri($"https://kv-fedtest-65t5.vault.azure.net/"), new DefaultAzureCredential());
+var keyVaultUrl = builder.Configuration["KEY_VAULT_URL"];
 
-builder.Services.AddDbContextFactory<MyDbContext>(options =>
-    
-    options.UseSqlServer(builder.Configuration["ToDoDbConnectionString"]));
+if (string.IsNullOrEmpty(keyVaultUrl))
+{
+    throw new Exception("KEY_VAULT_URL is missing");
+}
+
+builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl), new DefaultAzureCredential());
+builder.Services.AddDbContextFactory<MyDbContext>(options => options.UseSqlServer(builder.Configuration["ToDoDbConnectionString"]));
     
 var app = builder.Build();
 
