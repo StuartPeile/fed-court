@@ -92,3 +92,7 @@ I'd create an application dashboard that would pull in critical information for 
 #### Pipeline steps and jobs
 
 I'd split the pipleine into more jobs and group steps and not have a singe job that had multiple steps
+
+#### SQL Admin
+
+Not use the sql admin account for the project but set up a dedicated user
