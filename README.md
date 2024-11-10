@@ -22,6 +22,8 @@ The project spec asked to use Azure Devops, unfortunatly to get the pipelines up
 
 There is a single Github action (pipeline) that takes a parameter of "environment". That being DEV, TEST or PROD. The settings and values to run the pipeline are then loaded from Githubs Environment Variables and Secrets. These are used to connect to the Azure Subscription and pass to the Bicep script pre defined parameters like EnviromentName, Location, Azure SQL admin password etc.
 
+The pipeline is triggerd manually but can be set up using branching structures.
+
 Steps in the pipeline
 
 1. Checkout the bicep scripts from the main branch
@@ -30,6 +32,10 @@ Steps in the pipeline
 4. Wat-If the Bicep scripts to get a full log of what the run will change on the Azure subscription through the deployment
 5. Deploy to the Azure Subscription
 6. Check that the system is up and running using jtalk/url-health-check-action@v4. This calls the /healthy url of the web app that uses the sql connection string in the keyvault and executes a simple query on the database. If there were any issues, this would fail.
+
+### Bicep
+
+The bicep has a main.bicep file and then components are split off into their own files (modules). This is a clean approach, cuts down on the size of one big main bicep file and allows the modules to be reused by other possible pipelines in the future.
 
 #### Logging and Monitoring
 
