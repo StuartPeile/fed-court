@@ -4,6 +4,8 @@
 
 This is a project that deploys the architecture detailed below. It was Created using Azure Bicecp, Githup Actions and deploys to an Azure Subscription.
 
+This is a fully working project that has been deployed and tested.
+
 ## DESIGN
 
 The design of this system is an App service that talks to a SQL server. The App service is exposed to the public and has logging attached, scaled by CPU, and is placed in a vnet and subsiquent subnet. The SQL is to be secured by a private endpoint brings the SQL within the private endpoints own subnet.
@@ -43,6 +45,14 @@ Azure Monitor is used for all high level system health that plugs into deployed 
 
 Application Insights backed by Log Analytics is provisioned and attached to the App service. This will collect any custom logging from the app itself as well as a miriad of out of the box metrics like App service CPU, health etc.
 
+#### KeyVault
+
+I deployed the keyvault to it's own resource group, this makes it easier to maintain if environemnts are destroyed and re-deployed as you would come up against the issue of purging the deleted keyvault.
+
+#### SQL Database ve SQL Managed Instance
+
+I started out with a SQL Managed Instance so I could put it directly into the subnet but the deployment was taking too long (30 minutes +) and after multiple teardowns that took 40 minutes plus I decided to use an Azure SQL database and connect the App Service to the Azure SQL Database via a private link this was deployed to the sql subnet, therefore via connection brining the SQL Database into the subnet
+
 #### SQL tracking
 
 Sql tracking is automatically turned on as a dependency item for Application Insights. This can be expanded with full text logging using:
@@ -64,3 +74,11 @@ https://learn.microsoft.com/en-us/azure/azure-sql/database-watcher-overview?view
 An App Service Service Connector when set up correctly will build and add the connection string to the key vault and automatially add the right App Settings to retrieve that connection string. It also gives a great portal representation of the health of the connection to the database. This can siplify the Bicep so you don't have to add the Connection String yourself
 
 https://learn.microsoft.com/en-us/azure/service-connector/overview
+
+#### Resource Groups
+
+I'd split the resources into more resource groups so secutity access can be granted at the resource group level depending on your operational support:
+
+- logging: only available to ops teams
+- data: sql administrators
+- networking: keep critical netorking infrastructure in one place
