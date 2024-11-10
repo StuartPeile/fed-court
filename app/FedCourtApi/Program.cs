@@ -17,12 +17,6 @@ builder.Services.AddDbContextFactory<MyDbContext>(options =>
     
     options.UseSqlServer(builder.Configuration["ToDoDbConnectionString"]));
     
-    //options.UseSqlServer("Server=tcp:sql-fedtest.database.windows.net,1433;Initial Catalog=todo;Persist Security Info=False;User ID=sqladmin;Password=F6cEhD#kp@WR=Bf8+GqdY;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"));
-
-
-//   options.UseSqlServer("Server=tcp:sqlfed.fdeee250a634.database.windows.net,1433;Persist Security Info=False;User ID=sqladmin;Password=F6cEhD#kp@WR=Bf8+GqdY;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"));
-
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -30,19 +24,17 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    
+    app.UseDeveloperExceptionPage();    
 }
 
-app.UseDeveloperExceptionPage();
 app.UseHttpsRedirection();
 
 app.MapGet("/dbmigrate", async () =>
 {
 
-    var aiWidgetLogDbContextFactory = app.Services.GetRequiredService<IDbContextFactory<MyDbContext>>();
-    
+    var todoDbContextFactory = app.Services.GetRequiredService<IDbContextFactory<MyDbContext>>();
         
-    var dbContext = aiWidgetLogDbContextFactory.CreateDbContext();
+    var dbContext = todoDbContextFactory.CreateDbContext();
 
         dbContext.Database.Migrate();
         dbContext.ToDos.Add(new ToDo() {Title = "Do Gardening", IsComplete = false });
@@ -53,10 +45,9 @@ app.MapGet("/dbmigrate", async () =>
 
 app.MapGet("/healthy", async () =>
 {
-    var aiWidgetLogDbContextFactory = app.Services.GetRequiredService<IDbContextFactory<MyDbContext>>();
+    var todoDbContextFactory = app.Services.GetRequiredService<IDbContextFactory<MyDbContext>>();
     
-        
-    var dbContext = aiWidgetLogDbContextFactory.CreateDbContext();
+    var dbContext = todoDbContextFactory.CreateDbContext();
 
     try
     {
@@ -70,13 +61,11 @@ app.MapGet("/healthy", async () =>
     
 });
 
-app.MapGet("/kv", () => Results.Ok(builder.Configuration["ToDoDbConnectionString"]));
-
 app.MapGet("/todo", async () =>
 {
-    var aiWidgetLogDbContextFactory = app.Services.GetRequiredService<IDbContextFactory<MyDbContext>>();
+    var todoDbContextFactory = app.Services.GetRequiredService<IDbContextFactory<MyDbContext>>();
     
-    var dbContext = aiWidgetLogDbContextFactory.CreateDbContext();
+    var dbContext = todoDbContextFactory.CreateDbContext();
 
     try
     {
@@ -88,8 +77,6 @@ app.MapGet("/todo", async () =>
         return Results.Problem(e.InnerException?.Message);
     }
 });
-
-app.MapGet("/infrahealthy", () => Results.Ok());
 
 app.MapGet("/alive", () => Results.Ok());
 
